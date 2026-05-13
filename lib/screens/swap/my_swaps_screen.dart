@@ -1,19 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/user_provider.dart';
 import '../../core/theme/app_colors.dart';
-import '../../providers/user_provider.dart';
 import '../../core/extensions/datetime_extensions.dart';
-import '../../providers/user_provider.dart';
 import '../../providers/swap_provider.dart';
-import '../../providers/user_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../repositories/firestore_repository.dart';
-import '../../providers/user_provider.dart';
 import '../../models/swap_request_model.dart';
-import '../../providers/user_provider.dart';
 
 class MySwapsScreen extends ConsumerWidget {
   const MySwapsScreen({super.key});

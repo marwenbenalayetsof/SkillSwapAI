@@ -33,6 +33,14 @@ class SwapRequestModel {
     this.completedAt,
   });
 
+  static DateTime? _parseDT(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    try { return (value as dynamic).toDate() as DateTime; } catch (_) {}
+    try { return DateTime.fromMillisecondsSinceEpoch((value as dynamic).millisecondsSinceEpoch as int); } catch (_) {}
+    return null;
+  }
+
   factory SwapRequestModel.fromMap(Map<String, dynamic> map, String docId) {
     return SwapRequestModel(
       id: docId,
@@ -47,18 +55,9 @@ class SwapRequestModel {
       status: map['status'] as String? ?? 'pending',
       timeCredits: map['timeCredits'] as int? ?? 1,
       message: map['message'] as String?,
-      createdAt: map['createdAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['createdAt'] as dynamic).millisecondsSinceEpoch)
-          : DateTime.now(),
-      updatedAt: map['updatedAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['updatedAt'] as dynamic).millisecondsSinceEpoch)
-          : null,
-      completedAt: map['completedAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['completedAt'] as dynamic).millisecondsSinceEpoch)
-          : null,
+      createdAt: _parseDT(map['createdAt']) ?? DateTime.now(),
+      updatedAt: _parseDT(map['updatedAt']),
+      completedAt: _parseDT(map['completedAt']),
     );
   }
 

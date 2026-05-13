@@ -33,6 +33,14 @@ class GroupSessionModel {
     required this.createdAt,
   });
 
+  static DateTime? _parseDT(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    try { return (value as dynamic).toDate() as DateTime; } catch (_) {}
+    try { return DateTime.fromMillisecondsSinceEpoch((value as dynamic).millisecondsSinceEpoch as int); } catch (_) {}
+    return null;
+  }
+
   factory GroupSessionModel.fromMap(Map<String, dynamic> map, String docId) {
     return GroupSessionModel(
       id: docId,
@@ -46,16 +54,10 @@ class GroupSessionModel {
       participantIds: List<String>.from(map['participantIds'] as List? ?? []),
       participantNames: List<String>.from(map['participantNames'] as List? ?? []),
       creditsPerParticipant: map['creditsPerParticipant'] as int? ?? 1,
-      scheduledAt: map['scheduledAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['scheduledAt'] as dynamic).millisecondsSinceEpoch)
-          : DateTime.now(),
+      scheduledAt: _parseDT(map['scheduledAt']) ?? DateTime.now(),
       durationMinutes: map['durationMinutes'] as int? ?? 60,
       status: map['status'] as String? ?? 'upcoming',
-      createdAt: map['createdAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['createdAt'] as dynamic).millisecondsSinceEpoch)
-          : DateTime.now(),
+      createdAt: _parseDT(map['createdAt']) ?? DateTime.now(),
     );
   }
 

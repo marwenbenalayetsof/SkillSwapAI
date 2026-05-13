@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/user_provider.dart';
 import '../../core/theme/app_colors.dart';
-import '../../providers/user_provider.dart';
 import '../../providers/chat_provider.dart';
-import '../../providers/user_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../repositories/firestore_repository.dart';
-import '../../providers/user_provider.dart';
 import '../../models/chat_message_model.dart';
-import '../../providers/user_provider.dart';
 
 class ChatRoomScreen extends ConsumerStatefulWidget {
   final String roomId;
@@ -34,9 +28,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _msgCtrl.clear();
     final user = ref.read(authStateProvider).valueOrNull;
     if (user == null) return;
+    final myUser = ref.read(currentUserModelProvider).valueOrNull;
     final msg = ChatMessageModel(
       id: '', roomId: widget.roomId, senderId: user.uid,
-      senderName: user.displayName ?? 'User', content: text, createdAt: DateTime.now(),
+      senderName: myUser?.name ?? user.displayName ?? 'User', content: text, createdAt: DateTime.now(),
     );
     await ref.read(firestoreRepositoryProvider).sendMessage(msg);
   }

@@ -23,6 +23,14 @@ class ChatRoomModel {
     required this.createdAt,
   });
 
+  static DateTime? _parseDT(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    try { return (value as dynamic).toDate() as DateTime; } catch (_) {}
+    try { return DateTime.fromMillisecondsSinceEpoch((value as dynamic).millisecondsSinceEpoch as int); } catch (_) {}
+    return null;
+  }
+
   factory ChatRoomModel.fromMap(Map<String, dynamic> map, String docId) {
     return ChatRoomModel(
       id: docId,
@@ -31,16 +39,10 @@ class ChatRoomModel {
       participantAvatars: Map<String, String?>.from(map['participantAvatars'] as Map? ?? {}),
       lastMessage: map['lastMessage'] as String?,
       lastSenderName: map['lastSenderName'] as String?,
-      lastMessageTime: map['lastMessageTime'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['lastMessageTime'] as dynamic).millisecondsSinceEpoch)
-          : null,
+      lastMessageTime: _parseDT(map['lastMessageTime']),
       unreadCount: Map<String, int>.from(map['unreadCount'] as Map? ?? {}),
       swapRequestId: map['swapRequestId'] as String?,
-      createdAt: map['createdAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['createdAt'] as dynamic).millisecondsSinceEpoch)
-          : DateTime.now(),
+      createdAt: _parseDT(map['createdAt']) ?? DateTime.now(),
     );
   }
 

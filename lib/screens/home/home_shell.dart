@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
-import '../../providers/auth_provider.dart';
 import '../../repositories/firestore_repository.dart';
 
 class HomeShell extends ConsumerStatefulWidget {
@@ -14,21 +13,6 @@ class HomeShell extends ConsumerStatefulWidget {
 }
 
 class _HomeShellState extends ConsumerState<HomeShell> {
-  @override
-  void initState() {
-    super.initState();
-    _checkAuth();
-  }
-
-  void _checkAuth() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = ref.read(authStateProvider).valueOrNull;
-      if (user == null) {
-        context.go('/login');
-      }
-    });
-  }
-
   int _currentIndex() {
     final location = GoRouterState.of(context).uri.path;
     if (location.startsWith('/browse')) return 1;

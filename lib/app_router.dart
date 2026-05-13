@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'providers/auth_provider.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
@@ -59,7 +60,23 @@ class AppRouter {
       }),
     ],
     redirect: (context, state) {
-      // No redirect logic here — handled in HomeShell
+      final user = FirebaseAuth.instance.currentUser;
+      final isAuthRoute = state.uri.path == '/login' || state.uri.path == '/register';
+      final isSplashRoute = state.uri.path == '/splash';
+
+      // Don't redirect from splash - it handles its own navigation
+      if (isSplashRoute) return null;
+
+      // If not authenticated and trying to access protected route, go to login
+      if (user == null && !isAuthRoute) {
+        return '/login';
+      }
+
+      // If authenticated and on auth routes, go to home
+      if (user != null && isAuthRoute) {
+        return '/home';
+      }
+
       return null;
     },
   );

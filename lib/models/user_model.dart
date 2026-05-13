@@ -43,6 +43,22 @@ class UserModel {
     this.preferences = const {},
   });
 
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    // Firestore Timestamp has toDate() method
+    if (value is dynamic) {
+      try {
+        // Try calling toDate() for Firestore Timestamp
+        return (value as dynamic).toDate() as DateTime;
+      } catch (_) {}
+      try {
+        return DateTime.fromMillisecondsSinceEpoch(value.millisecondsSinceEpoch as int);
+      } catch (_) {}
+    }
+    return null;
+  }
+
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       uid: map['uid'] as String? ?? '',
@@ -62,14 +78,8 @@ class UserModel {
       badges: List<String>.from(map['badges'] as List? ?? []),
       endorsements: List<String>.from(map['endorsements'] as List? ?? []),
       isOnline: map['isOnline'] as bool? ?? false,
-      lastSeen: map['lastSeen'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['lastSeen'] as dynamic).millisecondsSinceEpoch)
-          : null,
-      createdAt: map['createdAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['createdAt'] as dynamic).millisecondsSinceEpoch)
-          : DateTime.now(),
+      lastSeen: _parseDateTime(map['lastSeen']),
+      createdAt: _parseDateTime(map['createdAt']) ?? DateTime.now(),
       preferences: Map<String, dynamic>.from(map['preferences'] as Map? ?? {}),
     );
   }

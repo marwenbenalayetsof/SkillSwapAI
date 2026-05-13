@@ -19,6 +19,14 @@ class ChatMessageModel {
     required this.createdAt,
   });
 
+  static DateTime? _parseDT(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    try { return (value as dynamic).toDate() as DateTime; } catch (_) {}
+    try { return DateTime.fromMillisecondsSinceEpoch((value as dynamic).millisecondsSinceEpoch as int); } catch (_) {}
+    return null;
+  }
+
   factory ChatMessageModel.fromMap(Map<String, dynamic> map, String docId) {
     return ChatMessageModel(
       id: docId,
@@ -28,10 +36,7 @@ class ChatMessageModel {
       senderAvatar: map['senderAvatar'] as String?,
       content: map['content'] as String? ?? '',
       type: map['type'] as String? ?? 'text',
-      createdAt: map['createdAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['createdAt'] as dynamic).millisecondsSinceEpoch)
-          : DateTime.now(),
+      createdAt: _parseDT(map['createdAt']) ?? DateTime.now(),
     );
   }
 

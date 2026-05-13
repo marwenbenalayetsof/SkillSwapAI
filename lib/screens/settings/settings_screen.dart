@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../repositories/auth_repository.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -29,7 +31,10 @@ class SettingsScreen extends ConsumerWidget {
           _tile(Icons.code, 'Made with Flutter', const Icon(Icons.favorite, color: AppColors.error, size: 18)),
           const SizedBox(height: 24),
           SizedBox(width: double.infinity, child: OutlinedButton.icon(
-            onPressed: () => context.go('/login'),
+            onPressed: () async {
+              await ref.read(authRepositoryProvider).signOut();
+              if (context.mounted) context.go('/login');
+            },
             icon: const Icon(Icons.logout, size: 18), label: const Text('Sign Out'),
             style: OutlinedButton.styleFrom(foregroundColor: AppColors.error, side: const BorderSide(color: AppColors.error),
               padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),

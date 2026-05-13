@@ -23,6 +23,14 @@ class SkillBoardModel {
     required this.createdAt,
   });
 
+  static DateTime? _parseDT(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    try { return (value as dynamic).toDate() as DateTime; } catch (_) {}
+    try { return DateTime.fromMillisecondsSinceEpoch((value as dynamic).millisecondsSinceEpoch as int); } catch (_) {}
+    return null;
+  }
+
   factory SkillBoardModel.fromMap(Map<String, dynamic> map, String docId) {
     return SkillBoardModel(
       id: docId,
@@ -34,10 +42,7 @@ class SkillBoardModel {
       description: map['description'] as String?,
       tags: List<String>.from(map['tags'] as List? ?? []),
       responseCount: map['responseCount'] as int? ?? 0,
-      createdAt: map['createdAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['createdAt'] as dynamic).millisecondsSinceEpoch)
-          : DateTime.now(),
+      createdAt: _parseDT(map['createdAt']) ?? DateTime.now(),
     );
   }
 

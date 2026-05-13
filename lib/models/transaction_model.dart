@@ -19,6 +19,14 @@ class TransactionModel {
     required this.createdAt,
   });
 
+  static DateTime? _parseDT(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    try { return (value as dynamic).toDate() as DateTime; } catch (_) {}
+    try { return DateTime.fromMillisecondsSinceEpoch((value as dynamic).millisecondsSinceEpoch as int); } catch (_) {}
+    return null;
+  }
+
   factory TransactionModel.fromMap(Map<String, dynamic> map, String docId) {
     return TransactionModel(
       id: docId,
@@ -28,10 +36,7 @@ class TransactionModel {
       amount: map['amount'] as int? ?? 0,
       swapRequestId: map['swapRequestId'] as String?,
       description: map['description'] as String?,
-      createdAt: map['createdAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (map['createdAt'] as dynamic).millisecondsSinceEpoch)
-          : DateTime.now(),
+      createdAt: _parseDT(map['createdAt']) ?? DateTime.now(),
     );
   }
 
