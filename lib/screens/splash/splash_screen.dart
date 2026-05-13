@@ -30,8 +30,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   Future<void> _navigate() async {
-    // Check Firestore availability in background
-    FirestoreRepository().checkAvailability();
+    // Check Firestore availability and start monitoring
+    try {
+      await FirestoreRepository().checkAvailability().timeout(const Duration(seconds: 5));
+    } catch (_) {}
+    FirestoreRepository.startAvailabilityMonitor();
 
     // Wait for splash animation
     await Future.delayed(const Duration(seconds: 2));

@@ -1,13 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'user_provider.dart';
 import '../models/swap_request_model.dart';
-import 'user_provider.dart';
 import '../repositories/firestore_repository.dart';
-import 'user_provider.dart';
 import '../services/demo_data_service.dart';
-import 'user_provider.dart';
 import 'auth_provider.dart';
-import 'user_provider.dart';
 
 final mySwapsProvider = StreamProvider<List<SwapRequestModel>>((ref) {
   final user = ref.watch(authStateProvider).valueOrNull;

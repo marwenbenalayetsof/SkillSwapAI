@@ -6,6 +6,17 @@ import 'auth_provider.dart';
 
 final firestoreRepositoryProvider = Provider<FirestoreRepository>((ref) => FirestoreRepository());
 
+/// Periodically checks Firestore availability and provides reactive state
+final firestoreAvailableProvider = StreamProvider<bool>((ref) {
+  return Stream.periodic(const Duration(seconds: 5), (_) {
+    FirestoreRepository().checkAvailability();
+    return FirestoreRepository.isAvailable;
+  }).asyncMap((event) async {
+    await FirestoreRepository().checkAvailability();
+    return FirestoreRepository.isAvailable;
+  });
+});
+
 final currentUserModelProvider = StreamProvider<UserModel?>((ref) {
   final user = ref.watch(authStateProvider).valueOrNull;
   if (user == null) return Stream.value(null);

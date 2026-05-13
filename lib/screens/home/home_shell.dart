@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../repositories/firestore_repository.dart';
+import '../../providers/user_provider.dart';
 
 class HomeShell extends ConsumerStatefulWidget {
   final Widget child;
@@ -34,7 +35,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
-    final fsAvailable = FirestoreRepository.isAvailable;
+    // Watch Firestore availability reactively
+    final fsAvailable = ref.watch(firestoreAvailableProvider).valueOrNull ?? FirestoreRepository.isAvailable;
     return Scaffold(
       body: Column(children: [
         if (!fsAvailable)

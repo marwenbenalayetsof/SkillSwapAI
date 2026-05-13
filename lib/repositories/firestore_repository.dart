@@ -12,22 +12,25 @@ class FirestoreRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   static bool _isAvailable = true;
   static bool get isAvailable => _isAvailable;
+  static void resetAvailability() => _isAvailable = true;
 
   Future<void> createUser(UserModel user) async {
     try {
       await _db.collection('users').doc(user.uid).set({...user.toMap(), 'createdAt': FieldValue.serverTimestamp()});
+      _isAvailable = true;
     } catch (e) { _isAvailable = false; rethrow; }
   }
 
   Future<UserModel?> getUser(String uid) async {
     try {
       final doc = await _db.collection('users').doc(uid).get();
+      _isAvailable = true;
       return doc.exists ? UserModel.fromMap(doc.data()!) : null;
     } catch (e) { _isAvailable = false; return null; }
   }
 
   Future<void> updateUser(UserModel user) async {
-    try { await _db.collection('users').doc(user.uid).update(user.toMap()); }
+    try { await _db.collection('users').doc(user.uid).update(user.toMap()); _isAvailable = true; }
     catch (e) { _isAvailable = false; }
   }
 
@@ -42,6 +45,7 @@ class FirestoreRepository {
   Future<String> createSwapRequest(SwapRequestModel request) async {
     try {
       final ref = await _db.collection('swap_requests').add({...request.toMap(), 'createdAt': FieldValue.serverTimestamp()});
+      _isAvailable = true;
       return ref.id;
     } catch (e) { _isAvailable = false; rethrow; }
   }
@@ -51,6 +55,7 @@ class FirestoreRepository {
       final data = {'status': status, 'updatedAt': FieldValue.serverTimestamp()};
       if (status == 'completed') data['completedAt'] = FieldValue.serverTimestamp();
       await _db.collection('swap_requests').doc(requestId).update(data);
+      _isAvailable = true;
     } catch (e) { _isAvailable = false; }
   }
 
@@ -64,6 +69,7 @@ class FirestoreRepository {
   Future<String> createChatRoom(ChatRoomModel room) async {
     try {
       final ref = await _db.collection('chat_rooms').add({...room.toMap(), 'createdAt': FieldValue.serverTimestamp()});
+      _isAvailable = true;
       return ref.id;
     } catch (e) { _isAvailable = false; rethrow; }
   }
@@ -78,6 +84,7 @@ class FirestoreRepository {
     try {
       await _db.collection('chat_rooms').doc(message.roomId).collection('messages').add({...message.toMap(), 'createdAt': FieldValue.serverTimestamp()});
       await _db.collection('chat_rooms').doc(message.roomId).update({'lastMessage': message.content, 'lastSenderName': message.senderName, 'lastMessageTime': FieldValue.serverTimestamp()});
+      _isAvailable = true;
     } catch (e) { _isAvailable = false; }
   }
 
@@ -95,6 +102,7 @@ class FirestoreRepository {
         double avg = reviews.docs.map((d) => (d.data()['rating'] as num).toDouble()).reduce((a, b) => a + b) / reviews.size;
         await _db.collection('users').doc(review.toUserId).update({'rating': avg, 'reviewCount': reviews.size});
       }
+      _isAvailable = true;
     } catch (e) { _isAvailable = false; }
   }
 
@@ -104,7 +112,7 @@ class FirestoreRepository {
   }
 
   Future<void> createTransaction(TransactionModel tx) async {
-    try { await _db.collection('transactions').add({...tx.toMap(), 'createdAt': FieldValue.serverTimestamp()}); }
+    try { await _db.collection('transactions').add({...tx.toMap(), 'createdAt': FieldValue.serverTimestamp()}); _isAvailable = true; }
     catch (e) { _isAvailable = false; }
   }
 
@@ -116,7 +124,7 @@ class FirestoreRepository {
   }
 
   Future<void> createBoardPost(SkillBoardModel post) async {
-    try { await _db.collection('skill_boards').add({...post.toMap(), 'createdAt': FieldValue.serverTimestamp()}); }
+    try { await _db.collection('skill_boards').add({...post.toMap(), 'createdAt': FieldValue.serverTimestamp()}); _isAvailable = true; }
     catch (e) { _isAvailable = false; }
   }
 
@@ -128,6 +136,7 @@ class FirestoreRepository {
   Future<String> createGroupSession(GroupSessionModel session) async {
     try {
       final ref = await _db.collection('group_sessions').add({...session.toMap(), 'createdAt': FieldValue.serverTimestamp()});
+      _isAvailable = true;
       return ref.id;
     } catch (e) { _isAvailable = false; rethrow; }
   }
@@ -143,11 +152,34 @@ class FirestoreRepository {
         'participantIds': FieldValue.arrayUnion([userId]),
         'participantNames': FieldValue.arrayUnion([userName]),
       });
+      _isAvailable = true;
     } catch (e) { _isAvailable = false; }
   }
 
   Future<bool> checkAvailability() async {
-    try { await _db.collection('users').limit(1).get(); _isAvailable = true; return true; }
-    catch (e) { _isAvailable = false; return false; }
+    try {
+      // Use a lightweight read to check connectivity
+      await _db.collection('users').limit(1).get();
+      _isAvailable = true;
+      return true;
+    } catch (e) {
+      _isAvailable = false;
+      return false;
+    }
+  }
+
+  /// Set up a periodic availability check that resets _isAvailable
+  static void startAvailabilityMonitor() {
+    Future.delayed(const Duration(seconds: 5), () {
+      final repo = FirestoreRepository();
+      repo.checkAvailability().then((available) {
+        if (available) {
+          // Log that Firestore is available
+          print('Firestore is available - full mode active');
+        }
+        // Continue monitoring
+        startAvailabilityMonitor();
+      });
+    });
   }
 }
